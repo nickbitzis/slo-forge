@@ -1,0 +1,15 @@
+apiVersion: sloforge/v1
+service: image-proxy
+owner: team-platform
+tier: standard
+description: "Resizes and caches product images."
+slos:
+  - name: availability
+    objective: 99.9
+    window: 30d
+    description: Share of requests that do not return a 5xx.
+    sli:
+      type: availability
+      metric: http_requests_total
+      labels: {job: image-proxy}
+      bad: {code: "5.."}

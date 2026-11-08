@@ -1,0 +1,24 @@
+apiVersion: sloforge/v1
+service: auth-service
+owner: team-identity
+tier: critical
+description: "Sign-in and session tokens."
+slos:
+  - name: availability
+    objective: 99.95
+    window: 30d
+    description: Share of requests that do not return a 5xx.
+    sli:
+      type: availability
+      metric: http_requests_total
+      labels: {job: auth-service}
+      bad: {code: "5.."}
+  - name: latency
+    objective: 99.0
+    window: 30d
+    description: Share of requests served in under 0.25 s.
+    sli:
+      type: latency
+      metric: http_request_duration_seconds
+      labels: {job: auth-service}
+      threshold_seconds: 0.25

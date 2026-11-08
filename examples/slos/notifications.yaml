@@ -1,0 +1,15 @@
+apiVersion: sloforge/v1
+service: notifications
+owner: team-platform
+tier: low
+description: "Order emails and push messages."
+slos:
+  - name: availability
+    objective: 99.0
+    window: 30d
+    description: Share of requests that do not return a 5xx.
+    sli:
+      type: availability
+      metric: http_requests_total
+      labels: {job: notifications}
+      bad: {code: "5.."}

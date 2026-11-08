@@ -1,0 +1,18 @@
+# Error budget policy. The deploy gate checks every SLO of a service against these rules.
+# Change types: feature, config, fix, rollback. Fixes and rollbacks are never blocked by
+# budget alone, so a team can always ship the change that stops the burn.
+apiVersion: sloforge/v1
+kind: ErrorBudgetPolicy
+policies:
+  - name: freeze-features
+    description: Budget below 25%. Only reliability work ships until it recovers.
+    when: {budget_remaining_below: 0.25}
+    block: [feature]
+  - name: freeze-all-but-fixes
+    description: Budget spent. Config changes also need a review by the owning team lead.
+    when: {budget_remaining_below: 0.0}
+    block: [feature, config]
+  - name: active-page
+    description: A page-severity burn rate alert is firing right now.
+    when: {page_firing: true}
+    block: [feature, config]

@@ -1,0 +1,15 @@
+apiVersion: sloforge/v1
+service: inventory-service
+owner: team-fulfillment
+tier: standard
+description: "Stock levels per warehouse."
+slos:
+  - name: availability
+    objective: 99.9
+    window: 30d
+    description: Share of requests that do not return a 5xx.
+    sli:
+      type: availability
+      metric: http_requests_total
+      labels: {job: inventory-service}
+      bad: {code: "5.."}

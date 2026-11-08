@@ -1,0 +1,24 @@
+apiVersion: sloforge/v1
+service: checkout-api
+owner: team-payments
+tier: critical
+description: "Cart to order: totals, address, payment handoff."
+slos:
+  - name: availability
+    objective: 99.95
+    window: 30d
+    description: Share of requests that do not return a 5xx.
+    sli:
+      type: availability
+      metric: http_requests_total
+      labels: {job: checkout-api}
+      bad: {code: "5.."}
+  - name: latency
+    objective: 99.0
+    window: 30d
+    description: Share of requests served in under 0.5 s.
+    sli:
+      type: latency
+      metric: http_request_duration_seconds
+      labels: {job: checkout-api}
+      threshold_seconds: 0.5

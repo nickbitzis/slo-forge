@@ -1,0 +1,20 @@
+apiVersion: sloforge/v1
+service: payments-gateway
+owner: team-payments
+tier: critical
+description: "Card authorization through the payment processor."
+slos:
+  - name: availability
+    objective: 99.95
+    window: 30d
+    description: Share of requests that do not return a 5xx.
+    sli:
+      type: availability
+      metric: http_requests_total
+      labels: {job: payments-gateway}
+      bad: {code: "5.."}
+    alerting:
+      multiwindow:
+        - {long: 1h, short: 5m, burn_rate: 14.4, severity: page}
+        - {long: 6h, short: 30m, burn_rate: 6, severity: page}
+        - {long: 3d, short: 6h, burn_rate: 1, severity: ticket}

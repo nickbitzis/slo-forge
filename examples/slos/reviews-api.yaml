@@ -1,0 +1,19 @@
+apiVersion: sloforge/v1
+service: reviews-api
+owner: team-catalog
+tier: low
+description: "Product reviews and ratings."
+slos:
+  - name: availability
+    objective: 99.5
+    window: 30d
+    description: Share of requests that do not return a 5xx.
+    sli:
+      type: availability
+      metric: http_requests_total
+      labels: {job: reviews-api}
+      bad: {code: "5.."}
+    alerting:
+      strategy: single_window
+      static_threshold: 0.05
+      single_window: {window: 1h, burn_rate: 14.4}

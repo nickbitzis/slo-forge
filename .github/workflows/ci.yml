@@ -1,0 +1,76 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - name: Lint
+        run: uvx ruff check .
+      - name: Test
+        run: uv run --python 3.12 --group dev pytest -q
+
+  slos:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - name: Validate SLO specs and the budget policy
+        run: uv run --python 3.12 sloforge validate examples/slos --policy examples/policy.yaml
+      - name: Broken specs must fail validation
+        run: |
+          if uv run --python 3.12 sloforge validate examples/invalid; then
+            echo "examples/invalid passed validation but should not"; exit 1
+          fi
+      - name: Generate rules, dashboards, and OpenSLO
+        run: |
+          uv run --python 3.12 sloforge generate examples/slos --out out --all-strategies
+          uv run --python 3.12 sloforge check-rules out
+      - uses: actions/upload-artifact@v4
+        with:
+          name: generated
+          path: out/
+
+  promtool:
+    runs-on: ubuntu-latest
+    needs: slos
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: generated
+          path: out
+      - name: promtool check rules
+        run: docker run --rm --entrypoint promtool -v $PWD/out:/out prom/prometheus check rules /out/*.yaml
+
+  docker:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - uses: docker/setup-buildx-action@v3
+      - name: Build image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          load: true
+          tags: sloforge:ci
+      - name: Smoke test the image and the deploy gate
+        run: |
+          docker run -d --name api -p 8835:8835 sloforge:ci
+          for i in $(seq 1 60); do curl -sf localhost:8835/healthz | grep -q '"ok"' && break; sleep 1; done
+          curl -sf localhost:8835/metrics | grep sloforge_error_budget_remaining
+          uv run --python 3.12 sloforge gate checkout-api --change feature
+          if uv run --python 3.12 sloforge gate inventory-service --change feature; then
+            echo "inventory-service should be blocked"; exit 1
+          fi
+          docker rm -f api
+      - name: Container can write generated files
+        run: docker run --rm sloforge:ci generate /app/examples/slos --out /app/out

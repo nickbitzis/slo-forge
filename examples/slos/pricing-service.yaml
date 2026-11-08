@@ -1,0 +1,15 @@
+apiVersion: sloforge/v1
+service: pricing-service
+owner: team-catalog
+tier: standard
+description: "Prices, promotions, and tax estimates."
+slos:
+  - name: availability
+    objective: 99.9
+    window: 28d
+    description: Share of requests that do not return a 5xx.
+    sli:
+      type: availability
+      metric: http_requests_total
+      labels: {job: pricing-service}
+      bad: {code: "5.."}

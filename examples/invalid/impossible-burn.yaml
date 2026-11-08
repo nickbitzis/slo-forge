@@ -1,0 +1,13 @@
+# A 90% objective has a 10% budget, so the highest possible burn rate is 10x.
+# The workbook's 14.4x page can never fire, and validate says so.
+apiVersion: sloforge/v1
+service: batch-reports
+owner: team-data
+slos:
+  - name: availability
+    objective: 90
+    window: 30d
+    sli:
+      type: availability
+      metric: report_runs_total
+      bad: {status: "failed"}

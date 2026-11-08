@@ -1,0 +1,24 @@
+apiVersion: sloforge/v1
+service: storefront-web
+owner: team-storefront
+tier: critical
+description: "Server-rendered shop pages."
+slos:
+  - name: availability
+    objective: 99.9
+    window: 30d
+    description: Share of requests that do not return a 5xx.
+    sli:
+      type: availability
+      metric: http_requests_total
+      labels: {job: storefront-web}
+      bad: {code: "5.."}
+  - name: latency
+    objective: 99.0
+    window: 28d
+    description: Share of requests served in under 0.4 s.
+    sli:
+      type: latency
+      metric: http_request_duration_seconds
+      labels: {job: storefront-web}
+      threshold_seconds: 0.4

@@ -1,0 +1,12 @@
+# Deliberately broken: `sloforge validate examples/invalid` must fail with four errors.
+apiVersion: sloforge/v1
+service: Legacy_Billing
+owner: team-billing
+slos:
+  - name: availability
+    objective: 100.5
+    window: 7d
+    sli:
+      type: availability
+      metric: http_requests_total
+      labels: {job: legacy-billing}

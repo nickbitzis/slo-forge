@@ -1,0 +1,24 @@
+apiVersion: sloforge/v1
+service: recommendations
+owner: team-discovery
+tier: low
+description: "Related products and personalized rows."
+slos:
+  - name: availability
+    objective: 99.0
+    window: 28d
+    description: Share of requests that do not return a 5xx.
+    sli:
+      type: availability
+      metric: http_requests_total
+      labels: {job: recommendations}
+      bad: {code: "5.."}
+  - name: latency
+    objective: 95.0
+    window: 28d
+    description: Share of requests served in under 1.0 s.
+    sli:
+      type: latency
+      metric: http_request_duration_seconds
+      labels: {job: recommendations}
+      threshold_seconds: 1.0
