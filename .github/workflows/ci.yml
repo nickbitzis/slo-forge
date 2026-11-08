@@ -46,7 +46,8 @@ jobs:
           name: generated
           path: out
       - name: promtool check rules
-        run: docker run --rm --entrypoint promtool -v $PWD/out:/out prom/prometheus check rules /out/*.yaml
+        # Expand the glob inside the container; only Prometheus rule files are checked.
+        run: docker run --rm --entrypoint sh -v "$PWD/out:/out" prom/prometheus -c 'promtool check rules /out/*.recording.yaml /out/*.alerts.*.yaml'
 
   docker:
     runs-on: ubuntu-latest
